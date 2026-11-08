@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vocabulary Usage Graph | Generative AI Applications Research</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #596579;
+      --line: #dce3ed;
+      --paper: #ffffff;
+      --page: #f3f6fa;
+      --explicit: #1769aa;
+      --explicit-pale: #e6f2fb;
+      --implicit: #b65316;
+      --implicit-pale: #fff0e5;
+      --accent: #6537a5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 32px 20px 48px;
+      color: var(--ink);
+      background: var(--page);
+      font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main { max-width: 1440px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.7rem, 3vw, 2.5rem); line-height: 1.15; }
+    h2 { margin: 28px 0 10px; font-size: 1.25rem; }
+    p { margin: 8px 0 14px; }
+    .subtitle, .muted { color: var(--muted); }
+
+    .panel {
+      margin-top: 20px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: 0 5px 20px rgb(23 32 51 / 4%);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .metric {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfcfe;
+    }
+
+    .metric strong { display: block; font-size: 1.6rem; line-height: 1.2; }
+    .metric span { color: var(--muted); font-size: .9rem; }
+    .metric.exp strong { color: var(--explicit); }
+    .metric.imp strong { color: var(--implicit); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 14px 0; }
+    .key { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
+    .swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .swatch.exp { background: var(--explicit); }
+    .swatch.imp { background: var(--implicit); }
+
+    .graph-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--paper); }
+    th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: center; }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      min-width: 94px;
+      background: #f8fafd;
+      color: #39465c;
+      font-size: .79rem;
+      line-height: 1.25;
+      vertical-align: bottom;
+    }
+    th.term-col { min-width: 250px; text-align: left; }
+    th.total-col { min-width: 90px; }
+    tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+    tbody th { text-align: left; font-weight: 600; }
+    .term-name { display: block; }
+    .term-note { display: block; margin-top: 2px; color: var(--muted); font-size: .78rem; font-weight: 400; }
+    .count-pair { display: flex; justify-content: center; gap: 4px; white-space: nowrap; }
+    .count {
+      display: inline-block;
+      min-width: 36px;
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-size: .76rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .count.exp { color: #104c7d; background: var(--explicit-pale); }
+    .count.imp { color: #853b0e; background: var(--implicit-pale); }
+    .total { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .total .e { color: var(--explicit); font-weight: 700; }
+    .total .i { color: var(--implicit); font-weight: 700; }
+    .empty { color: #a0a9b7; }
+    .row-basis { padding: 10px 12px; text-align: left; color: var(--muted); font-size: .86rem; }
+    details summary { color: var(--accent); cursor: pointer; font-weight: 600; }
+    details[open] { min-width: 700px; }
+    .method-list { padding-left: 20px; }
+    .method-list li { margin: 7px 0; }
+
+    @media (max-width: 700px) {
+      body { padding: 20px 12px 32px; }
+      .panel { padding: 15px; }
+      .summary { grid-template-columns: 1fr; }
+      th.term-col { min-width: 190px; }
+      th, td { padding: 8px 5px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Vocabulary Usage Graph</h1>
+      <p class="subtitle">How the vocabulary in <em>Generative AI Applications: Business Use Cases and Implementations</em> appears across the report's overview and six application areas.</p>
+      <p class="muted">Report analyzed: <a href="research.md">research.md</a> &middot; Vocabulary analyzed: <a href="../docs/vocabulary.md">vocabulary.md</a> &middot; Counts are sentence frequencies, not word-token totals.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="graph-title">
+      <h2 id="graph-title">Vocabulary-to-report relationship matrix</h2>
+      <p>Each row is a vocabulary term and each column is a report section. Non-zero cells connect a term to a section where it is used or clearly described. Blue counts are explicit; orange counts are implicit.</p>
+      <div class="legend" aria-label="Count legend">
+        <span class="key"><i class="swatch exp"></i> Explicit: term or listed inflection appears in the sentence</span>
+        <span class="key"><i class="swatch imp"></i> Implicit: the concept is described without naming the term</span>
+      </div>
+      <div class="summary" id="summary" aria-label="Usage totals"></div>
+      <div class="graph-wrap">
+        <table id="usage-graph">
+          <caption class="muted" style="padding: 10px; text-align: left;">E = explicit sentence count; I = implicit sentence count.</caption>
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="method-title">
+      <h2 id="method-title">Counting method and limitations</h2>
+      <ul class="method-list">
+        <li><strong>Explicit frequency:</strong> case-insensitive matches of the vocabulary term, including common inflections (for example, <em>prompt/prompts</em> and <em>integrate/integration</em>). A sentence counts once per term even if the term appears more than once in it. Product descriptions in the report are included; headings, URLs, and the reference list are excluded.</li>
+        <li><strong>Implicit frequency:</strong> a manual, conservative count of distinct sentences that describe the term's meaning without using its name or a listed inflection. The short note under each term records the basis for these subjective annotations. Implicit counts are interpretations, not automated keyword matches.</li>
+        <li>One sentence can contribute to multiple vocabulary terms. The overview is counted separately from the six numbered application sections. Counts describe this report only and are not measures of general importance or technical quality.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    const sections = [
+      "Overview",
+      "Customer service",
+      "Enterprise knowledge",
+      "Software development",
+      "Creative production",
+      "Clinical documentation",
+      "Scientific research"
+    ];
+
+    // Values per section use the order above. Explicit counts were checked
+    // against report sentences; implicit counts are manually annotated below.
+    const terms = [
+      { name: "Generative AI (GenAI)", explicit: [2, 1, 0, 0, 0, 0, 0], implicit: [0, 0, 0, 0, 0, 0, 0], basis: "No additional paraphrases were counted beyond the named term." },
+      { name: "Large language model (LLM)", explicit: [0, 0, 0, 0, 0, 0, 0], implicit: [0, 0, 0, 0, 0, 0, 0], basis: "The report mentions models generally but does not specifically describe a language model." },
+      { name: "Prompt", explicit: [0, 0, 0, 0, 1, 0, 0], implicit: [0, 0, 0, 0, 1, 0, 0], basis: "Creative-production text-to-image generation implies an instruction supplied to the model." },
+      { name: "Context", explicit: [0, 1, 2, 1, 1, 0, 0], implicit: [0, 0, 1, 0, 0, 0, 0], basis: "Enterprise search across connected company knowledge sources is described without using the word context." },
+      { name: "Grounding", explicit: [0, 0, 1, 0, 0, 0, 0], implicit: [0, 0, 2, 0, 0, 0, 0], basis: "Two enterprise-assistant examples describe answers informed by company sources or organizational work data." },
+      { name: "Retrieval", explicit: [0, 0, 1, 0, 0, 0, 0], implicit: [0, 0, 2, 0, 0, 0, 0], basis: "Searching approved company sources and connecting knowledge sources describe finding relevant information." },
+      { name: "Citation", explicit: [0, 0, 2, 0, 0, 0, 0], implicit: [0, 0, 1, 0, 0, 0, 0], basis: "The instruction to show where an answer came from describes source attribution without naming citations." },
+      { name: "Hallucination (confabulation)", explicit: [1, 0, 0, 0, 0, 0, 0], implicit: [0, 1, 1, 1, 1, 1, 1], basis: "One sentence in each application area describes plausible but false, inaccurate, or unsupported output or predictions." },
+      { name: "Access control", explicit: [0, 1, 0, 0, 0, 0, 0], implicit: [0, 0, 1, 0, 0, 0, 0], basis: "Preserving source permissions in enterprise search implies restricting access by user authorization." },
+      { name: "Integration", explicit: [0, 1, 0, 1, 2, 0, 0], implicit: [1, 0, 1, 0, 0, 1, 0], basis: "Implicit instances describe connecting organizational tools, searching across repositories, or fitting a note into an EHR." },
+      { name: "Workflow", explicit: [2, 2, 0, 0, 1, 2, 0], implicit: [0, 0, 0, 0, 0, 0, 0], basis: "Other process descriptions were not counted when they did not clearly describe a sequence of work." },
+      { name: "Human-in-the-loop", explicit: [0, 0, 0, 0, 0, 0, 0], implicit: [0, 2, 1, 1, 2, 2, 1], basis: "Human handoff, review, approval, or verification is described in the support, knowledge, software, creative, clinical, and research sections." },
+      { name: "Escalation", explicit: [0, 1, 0, 0, 0, 0, 0], implicit: [0, 1, 0, 0, 0, 0, 0], basis: "The Fin example describes transferring a conversation to a human team without using escalation terminology." },
+      { name: "Audit trail", explicit: [0, 1, 0, 0, 0, 0, 0], implicit: [0, 0, 0, 0, 0, 0, 0], basis: "No additional sentence describes a logging or traceability record without naming it." },
+      { name: "Provenance", explicit: [0, 0, 0, 0, 2, 0, 0], implicit: [0, 0, 0, 0, 0, 0, 0], basis: "The relevant creative-content sentences name provenance directly." },
+      { name: "Evaluation", explicit: [1, 0, 0, 1, 0, 0, 0], implicit: [0, 0, 0, 1, 0, 0, 1], basis: "Software testing/review and experimental validation describe assessing results without naming evaluation." },
+      { name: "Model confidence", explicit: [0, 0, 0, 0, 0, 0, 1], implicit: [0, 0, 0, 0, 0, 0, 0], basis: "The scientific-research paragraph names model confidence directly." },
+      { name: "Ambient clinical documentation", explicit: [0, 0, 0, 0, 0, 0, 0], implicit: [0, 0, 0, 0, 0, 4, 0], basis: "Four clinical-section sentences describe capturing conversation, drafting notes, producing clinician-reviewed summaries/coding suggestions, and implementing the documentation aid." },
+      { name: "Generative vs. predictive AI", explicit: [0, 0, 0, 0, 0, 0, 1], implicit: [0, 0, 0, 0, 0, 0, 2], basis: "The two AlphaFold implementation descriptions discuss predicted structures and structure-prediction tasks without repeating the vocabulary phrase." }
+    ];
+
+    const sum = (values) => values.reduce((total, value) => total + value, 0);
+    const explicitTotal = terms.reduce((total, term) => total + sum(term.explicit), 0);
+    const implicitTotal = terms.reduce((total, term) => total + sum(term.implicit), 0);
+    const activeTerms = terms.filter((term) => sum(term.explicit) + sum(term.implicit) > 0).length;
+
+    document.getElementById("summary").innerHTML = `
+      <div class="metric exp"><strong>${explicitTotal}</strong><span>explicit term-sentence matches</span></div>
+      <div class="metric imp"><strong>${implicitTotal}</strong><span>manually identified implicit instances</span></div>
+      <div class="metric"><strong>${activeTerms} / ${terms.length}</strong><span>vocabulary terms used or described</span></div>
+    `;
+
+    const table = document.getElementById("usage-graph");
+    const head = table.querySelector("thead");
+    const body = table.querySelector("tbody");
+    head.innerHTML = `<tr>
+      <th scope="col" class="term-col">Vocabulary term</th>
+      ${sections.map((section) => `<th scope="col">${section}</th>`).join("")}
+      <th scope="col" class="total-col">Explicit<br>total</th>
+      <th scope="col" class="total-col">Implicit<br>total</th>
+    </tr>`;
+
+    for (const term of terms) {
+      const explicitSum = sum(term.explicit);
+      const implicitSum = sum(term.implicit);
+      const row = document.createElement("tr");
+      const termCell = document.createElement("th");
+      termCell.scope = "row";
+      termCell.innerHTML = `<span class="term-name">${term.name}</span><span class="term-note">${term.basis}</span>`;
+      row.appendChild(termCell);
+
+      sections.forEach((section, index) => {
+        const cell = document.createElement("td");
+        const explicit = term.explicit[index];
+        const implicit = term.implicit[index];
+        if (explicit + implicit === 0) {
+          cell.innerHTML = '<span class="empty" aria-label="No usage">-</span>';
+        } else {
+          cell.setAttribute("aria-label", `${section}: ${explicit} explicit, ${implicit} implicit`);
+          cell.innerHTML = `<span class="count-pair"><span class="count exp">E ${explicit}</span><span class="count imp">I ${implicit}</span></span>`;
+        }
+        row.appendChild(cell);
+      });
+
+      const explicitCell = document.createElement("td");
+      explicitCell.className = "total";
+      explicitCell.innerHTML = `<span class="e">${explicitSum}</span>`;
+      row.appendChild(explicitCell);
+      const implicitCell = document.createElement("td");
+      implicitCell.className = "total";
+      implicitCell.innerHTML = `<span class="i">${implicitSum}</span>`;
+      row.appendChild(implicitCell);
+      body.appendChild(row);
+    }
+  </script>
+</body>
+</html>
